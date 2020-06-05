@@ -1,0 +1,129 @@
+.App {
+  text-align: center;
+}
+#select_image_panel, #select_gesture_panel {display: flex; margin: 1em 0 0;}
+p {margin:0;}
+#select_image_panel p, #select_gesture_panel p {margin: 0 1em 0 0 !important;}
+#select_gesture_panel .btn-danger {margin: 5px 2em 2px !important; padding: 1px 2px; font-size: smaller; position: relative; top: -0.5em;}
+#select_gesture {height: 1.5em;}
+#GestureEditLayer {z-index: 0;}
+.preloadedImages {display: none;}
+#GestureEditLayer .react-draggable, #GesturePlayback .react-draggable {background-color: rgba(50, 205, 50, 0.4);}
+
+/* https://stackoverflow.com/questions/38377062/how-to-make-html-button-look-pressed-in-using-css */
+button.btn {
+	box-shadow: 2px 1px 2px gray;
+    margin: 4px 10px 4px 10px;
+}
+button.btn:active {
+	box-shadow: 0 0 0 white !important;
+    margin: 6px 10px 2px 10px !important;
+}
+button.btn-danger {
+	color: black !important;
+	background-color: #fb6877 !important;
+}
+button.btn-danger:hover {
+	color: #042af7 !important;
+	background-color: #ff9ca6 !important;
+}
+
+.railOuterStyle {
+  position: absolute;
+  width: 100%;
+  height: 42px;
+  transform: translate(0%, -50%);
+  border-radius: 7px;
+  cursor: pointer;
+}
+.railInnerStyle {
+  background-color: rgb(155,155,155);
+  position: absolute;
+  width: 100%;
+  height: 10px;
+  transform: translate(0%, -50%);
+  border-radius: 7px;
+  border: 1px black solid;
+  pointer-events: none;
+}
+.handleStaticStyle{
+  position: absolute;
+  transform: translate(-50%, -50%);
+  z-index: 5;
+  width: 28px;
+  height: 42px;
+  cursor: pointer;
+  background-color: transparent;
+  -webkit-tap-highlight-color: rgba(0,0,0,0);
+}
+.divSliderRoleStaticStyle {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  z-index: 2;
+  width: 9px;
+  height: 24px;
+  border-radius: 50%;
+  box-shadow: 1px 1px 1px 1px rgba(0, 0, 0, 0.3);
+}
+.trackStaticStyle {
+  position: absolute;
+  transform: translate(0%, -50%);
+  height: 10px;
+  z-index: 1;
+  border-radius: 7px;
+  cursor: pointer;
+}
+.tickStaticStyle1 {
+  position: absolute;
+  margin-top: 14px;
+  width: 1px;
+  height: 5px;
+  background-color: rgb(200,200,200);
+}
+.tickStaticStyle2{
+  position: absolute;
+  margin-top: 22px;
+  font-size: 10px;
+  text-align: center;
+}
+.keyboardHandleStaticStyle{
+  transform: translate(-50%, -50%);
+  z-index: 2;
+  width: 9px;
+  height: 24px;
+  border-radius: 50%;
+  box-shadow: 1px 1px 1px 1px rgba(0, 0, 0, 0.3);
+}
+.GestureTimeSliderStaticStyle {
+  width: 100%;
+  height: 4em;
+  border: 1px black solid;
+  background-color: #ddefff;
+}
+.SliderHandleTooltip
+{
+  /*background-color: 'rgba(255, 100, 100, 0.85)';*/
+  position: relative;
+  z-index:100;
+  top:-2em;
+  left:-1em;
+  min-width:5em;
+  background-color: orange;
+  padding-left: 5px;
+  color: black;
+  border-radius: 3px;
+  display: inline-block;
+  font-size:smaller;
+}
+.modal-content{
+	min-width: 45em;
+}
+.modal-header{
+	padding: 5px !important;
+	margin: 5px;
+	background-color: lightgray;
+}
+.modal-header button{
+	position: relative;
+	left: -3px;
+}

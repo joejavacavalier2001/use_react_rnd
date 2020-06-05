@@ -1,0 +1,75 @@
+/*
+ * dafboard.css
+ */
+
+body {
+  margin: 1% ;
+}
+
+.whiteonblack {
+  background-color: #000;
+  color: #fff;
+}
+
+.blackonwhite {
+  background-color: #fff;
+  color: #000;
+}
+
+.header {
+  display: grid;
+  grid-template-columns: 24% 50% 24%;
+  grid-gap: 1%;
+}
+
+.body {
+  display: grid;
+  grid-template-columns: 34% 65%;
+  grid-gap: 1%;
+}
+
+.footer {
+  display: grid;
+  grid-template-columns: 100%;
+  grid-gap: 0%;
+}
+
+.rowgap {
+  display: grid;
+  grid-template-columns: 100%;
+  grid-gap: 0%;
+}
+
+.navigation {
+  display: grid;
+  grid-template-columns: 100%;
+  grid-gap: 0%;
+/*
+*/
+}
+
+.message {
+    background-color: #ddf;
+    color: #000;
+    overflow-y: auto;
+    height: 100px;
+}
+
+.box {
+  background-color: #eee;
+  color: #000;
+  border-radius: 5px;
+  padding: 20px;
+  font-size: 100%;
+}
+
+.space {
+  height: 10px;
+}
+
+.actions {
+    overflow-x: auto;
+    overflow-y: auto;
+    height: 300px;
+    background-color: #ddf;
+}
