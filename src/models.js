@@ -34,7 +34,8 @@ SlideManager.fields = {
 	currentGestureKey: attr(),
 	currentGestureIndex: attr(),
 	playbackDuration: attr(),
-	playbackIsPlaying: attr()
+	playbackIsPlaying: attr(),
+	playbackJumpTime: attr()
 };
 SlideManager.modelName = "SlideManager";
 

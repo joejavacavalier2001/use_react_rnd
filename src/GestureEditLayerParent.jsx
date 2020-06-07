@@ -8,7 +8,7 @@ import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import ReactMediaWrapper from "./ReactMediaWrapper";
 import GesturePlayback from "./GesturePlayback";
-import GestureTimeSliderParent from "./GestureTimeSliderParent";
+import GestureSliderParent from "./GestureSliderParent";
 import {playbackDuration, slideURLs} from "./selectors";
 
 const GestureEditLayerParent = (props) => {
@@ -25,8 +25,8 @@ const GestureEditLayerParent = (props) => {
 	  		<Col>
 	  			<Row> 
 	  				<Col> 
-	  					<ReactMediaWrapper /> 
 	  					<h1>Gesture Player</h1>
+	  					<ReactMediaWrapper /> 
 	  					<GesturePlayback />
 	  				</Col> 
 	  			</Row>
@@ -35,7 +35,7 @@ const GestureEditLayerParent = (props) => {
 	  		<Col>
 	  			<Row> <Col> <h1>Gesture Editor</h1> </Col> </Row>
 	  			<Row> <Col> <GesturePicker /> </Col> </Row>
-	  			<Row> <Col> <GestureTimeSliderParent decimalPlaces={2} /> </Col> </Row>
+	  			<Row> <Col> <GestureSliderParent decimalPlaces={2} /> </Col> </Row>
 	  			<Row> <Col> <GestureEditLayer /> </Col> </Row>
 	  		</Col>
 	  	</Row>

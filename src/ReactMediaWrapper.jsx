@@ -3,7 +3,10 @@ import {initializePlaybackState, updatePlaybackState, updateMediaDuration, setPl
 import {connect} from "react-redux";
 import ReactCustomReplayButton from "./ReactCustomReplayButton";
 import ReactCustomStopButton from "./ReactCustomStopButton";
+import GestureSliderParent from "./GestureSliderParent";
 import { Media, Player, controls } from 'react-media-player';
+import { playbackJumpTime } from "./selectors"; 
+
 const {CurrentTime} = controls;
 
 const ReactMediaWrapper = (props) => {
@@ -32,13 +35,20 @@ const ReactMediaWrapper = (props) => {
       <Media>
 		<>
 			<Player ref={ref} src={window.myfile} onTimeUpdate={handleOnTimeUpdate} />
-			<ReactCustomReplayButton setPlayingState={props.setPlaybackState}/>
+			<GestureSliderParent isSkipSlider={true} decimalPlaces={2} />
+			<ReactCustomReplayButton setPlayingState={props.setPlaybackState} playbackJumpTime={props.playbackJumpTime} />
 			<ReactCustomStopButton setPlayingState={props.setPlaybackState}/>
 			<CurrentTime />
 		</>
   	  </Media>
     );
 };
+const mapStateToProps = (state) => {
+  return {
+    playbackJumpTime: playbackJumpTime(state)
+  };
+};
+
 const mapDispatchToProps = (dispatch) => {
     return {
 	  updatePlaybackState: (currentMediaTime) => {
@@ -54,5 +64,5 @@ const mapDispatchToProps = (dispatch) => {
 	  }
     };
 };
-export default connect(null, mapDispatchToProps)(ReactMediaWrapper);
+export default connect(mapStateToProps, mapDispatchToProps)(ReactMediaWrapper);
 

@@ -44,7 +44,7 @@ const GesturePicker = (props) => {
   return (
     <div id="GesturePicker">
       <p>You will need to select a background image.</p> 
-      <p>Once you selected an image, you may edit one of the gestures that will appear on that image.</p>   
+      <p>Once you selected an image, you can choose a gesture to edit that will appear on that image.</p>   
       <div id="select_image_panel">
         <p>Choose a background image</p>
         <select id="select_image" name="select_image" value={props.currentSlideIndex} onChange={onSlideChange}>

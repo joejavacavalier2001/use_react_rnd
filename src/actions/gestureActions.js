@@ -99,6 +99,14 @@ function addGesture(valueInNewRange,step)
 	}
 }
 
+function setSkipTime(newSkipTime)
+{
+	return {
+		type: 'SET_SKIP_TIME',
+		payload: newSkipTime
+	}
+}
+
 export {
 	setGestureTimes, 
 	setCurrentGestureSizeAndLocation, 
@@ -111,6 +119,7 @@ export {
 	updateMediaDuration,
 	setPlaybackState,
 	deleteGestureAtIndex,
-	addGesture
+	addGesture,
+	setSkipTime
 };
 

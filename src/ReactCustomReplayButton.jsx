@@ -7,7 +7,7 @@ const ReactCustomReplayButton = (props) => {
 	let handleOnClick = useCallback((e) => {
 		e.preventDefault();
 		e.currentTarget.blur();
-		props.media.seekTo(0);
+		props.media.seekTo(props.playbackJumpTime);
 		props.media.play();
 		if ((props.setPlayingState) && ("function" === typeof props.setPlayingState))
 			props.setPlayingState(true);

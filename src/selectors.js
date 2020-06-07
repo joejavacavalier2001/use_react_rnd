@@ -149,6 +149,14 @@ const combinedPlaybackStatus = createSelector(
 	}
 );
 
+const playbackJumpTime = createSelector(
+	orm,
+	session => {
+		let slideMgr = session.SlideManager.first();
+		return slideMgr.playbackJumpTime;
+	}
+);
+
 export {
 	gestureList2, 
 	slideURLs, 
@@ -164,5 +172,6 @@ export {
 	playbackGestures,
 	playbackDuration,
 	playbackIsPlaying,
-	combinedPlaybackStatus
+	combinedPlaybackStatus,
+	playbackJumpTime
 };

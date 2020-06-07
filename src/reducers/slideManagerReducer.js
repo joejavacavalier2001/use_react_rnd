@@ -32,7 +32,7 @@ function ParseGestureText(strGestureInfo)
 const session = orm.session();
 const {SlideManager, Slide, Gesture, ClearObj} = session;
 
-var initialSlideMgr = SlideManager.create({slides: [], currentSlide: 0, currentPlaybackSlide: 0, playbackDuration: 0, playbackIsPlaying: false, currentGestureIndex: 0});
+var initialSlideMgr = SlideManager.create({slides: [], currentSlide: 0, currentPlaybackSlide: 0, playbackDuration: 0, playbackIsPlaying: false, currentGestureIndex: 0, playbackJumpTime: 0});
 
 var prefix = mainArray.filter(value => ("Prefix" in value))[0].Prefix;
 prefix = prefix.includes("/",prefix.length-1) ? prefix : (prefix + "/");
@@ -80,6 +80,9 @@ mainArray.forEach((value) => {
 		let oldGestureObj = currentGestureTree.get(startGesturePosition);
 		oldGestureObj.clearTime = currentPosition;
 		currentClearTree = currentClearTree.insert(currentPosition, ClearObj.create({startTime: currentPosition, gestureTime: startGesturePosition}));
+
+	} else if ("Jump" in value) {
+		initialSlideMgr.playbackJumpTime = parseFloat(value.Jump);
 	}
 });
 
@@ -205,20 +208,31 @@ function InitPlayback_Internal(session)
 	if (PlaybackManager.count())
 		PlaybackManager.first().delete();
 
+	if (slideMgr.playbackIsPlaying)
+		throw new Error("InitPlayback_Internal was called during playback");
+
 	let gestureTree = slideMgr.slides[0].gestureTree;
 	let clearTree = slideMgr.slides[0].clearTree;
 
-	if (slideMgr.playbackIsPlaying){
-		console.log("Warning!");
-		console.log("InitPlayback_Internal was called during playback");
-		console.log(new Error().stack);
+	let gestureIt = (gestureTree.length) ? gestureTree.begin : null;
+	let clearIt = (clearTree.length) ? clearTree.begin : null;
+
+	if ((gestureIt) && (gestureIt.key < slideMgr.playbackJumpTime)){
+		gestureIt = gestureTree.le(slideMgr.playbackJumpTime);
+		if (gestureIt.value.clearTime < slideMgr.playbackJumpTime)
+			if (gestureIt.hasNext)
+				gestureIt.next();
+			else
+				gestureIt = null;
+
+		clearIt = (gestureIt) ? clearTree.find(gestureIt.value.clearTime) : null;
 	}
 
 	PlaybackManager.create({
 		currentPlaybackDisplayGestures: [], 
 		currentPlaybackSlide: 0,
-		currentPlaybackGestureIt: (gestureTree.length ? gestureTree.begin : null),
-		currentPlaybackClearIt: (clearTree.length ? clearTree.begin : null),
+		currentPlaybackGestureIt: gestureIt,
+		currentPlaybackClearIt: clearIt,
 		playbackGesturesIndecies: createTree()
 	});
 }
@@ -381,6 +395,9 @@ const gestureReducer = (dbState = initialState, action) => {
 			break;
 		  case 'ADD_GESTURE':
 			AddGesture_Internal(sess,slideMgr,action.payload);
+			break;
+		  case 'SET_SKIP_TIME':
+			slideMgr.playbackJumpTime = action.payload;
 			break;
 		  default:
 			console.log("Inside default reducer case and action type is " + action.type);
