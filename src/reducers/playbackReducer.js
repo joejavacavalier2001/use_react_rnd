@@ -116,19 +116,21 @@ function UpdateGestureShowListDuringPlayback_Internal(session,payload)
 
 		if (tempIt){
 			let tempGesture = tempIt.value;
-			if ((tempGesture.startTime >= currentSkipRangeObj.skipTime) && (tempGesture.clearTime >= currentSkipRangeObj.resumeTime)){
-				console.log("found possible gesture to add to display");
-				console.log("startTime = " + tempGesture.startTime + ", clearTime = " + tempGesture.clearTime);
-				currentPlaybackDisplayGestures.push(tempGesture);
-				playbackMgr.currentPlaybackDisplayGestures = currentPlaybackDisplayGestures.slice();
-				console.log("display gesture count after adding: " + playbackMgr.currentPlaybackDisplayGestures.length);
-				playbackMgr.playbackGesturesIndecies = playbackGesturesIndecies.insert(tempGesture.startTime, (currentPlaybackDisplayGestures.length-1));
-			} 
-			if (tempIt.hasNext)
-				tempIt.next();
-			else
-				tempIt = null;
-			playbackMgr.currentPlaybackGestureIt = tempIt;
+			if (tempGesture){
+				if ((tempGesture.startTime >= currentSkipRangeObj.skipTime) && (tempGesture.clearTime >= currentSkipRangeObj.resumeTime)){
+					console.log("found possible gesture to add to display");
+					console.log("startTime = " + tempGesture.startTime + ", clearTime = " + tempGesture.clearTime);
+					currentPlaybackDisplayGestures.push(tempGesture);
+					playbackMgr.currentPlaybackDisplayGestures = currentPlaybackDisplayGestures.slice();
+					console.log("display gesture count after adding: " + playbackMgr.currentPlaybackDisplayGestures.length);
+					playbackMgr.playbackGesturesIndecies = playbackGesturesIndecies.insert(tempGesture.startTime, (currentPlaybackDisplayGestures.length-1));
+				} 
+				if (tempIt.hasNext)
+					tempIt.next();
+				else
+					tempIt = null;
+				playbackMgr.currentPlaybackGestureIt = tempIt;
+			}
 		} else {
 			console.log("did not find any possible gestures to add to display");
 			playbackMgr.currentPlaybackGestureIt = tempGTree.ge(currentSkipRangeObj.resumeTime);
