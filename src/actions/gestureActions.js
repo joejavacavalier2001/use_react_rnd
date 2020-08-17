@@ -27,6 +27,14 @@ function changeCurrentGesture(strNewGesture)
   };
 }
 
+function changeCurrentSkipRange(strSkipRangeIndex)
+{
+	return {
+		type: 'CHANGE_SKIPRANGE',
+		payload: strSkipRangeIndex
+	};
+}
+
 function changeBgSlide(strNewSlide)
 {
   return {
@@ -75,6 +83,13 @@ function setGestureTimes(newTimes)
 		payload: newTimes
 	};
 }
+function setSkipRangeTimes(newTimes)
+{
+	return {
+		type: 'SET_SKIP_TIMES',
+		payload: newTimes
+	};
+}
 function setPlaybackState(newValue)
 {
 	return {
@@ -91,6 +106,14 @@ function deleteGestureAtIndex(oldIndex)
 	}
 }
 
+function deleteSkipAtIndex(oldIndex)
+{
+	return {
+		type: 'DELETE_SKIPRANGE_AT_INDEX',
+		payload: oldIndex
+	}
+}
+
 function addGesture(valueInNewRange,step)
 {
 	return {
@@ -99,11 +122,33 @@ function addGesture(valueInNewRange,step)
 	}
 }
 
-function setSkipTime(newSkipTime)
+function addSkipRange(valueInNewRange,step)
 {
 	return {
-		type: 'SET_SKIP_TIME',
-		payload: newSkipTime
+		type: 'ADD_SKIPRANGE',
+		payload: [valueInNewRange, step]
+	}
+}
+
+function sampleAsychronousAction(inputValue){
+	return {
+		type: 'ASYCH',
+		payload: new Promise((resolve,reject) => {
+			setTimeout(() => {
+				if (inputValue) {
+					resolve(inputValue);
+				} else {
+					  reject("error message");
+				}
+			},5000);
+		})
+	}
+}
+
+function HideAsychronousDialogs() {
+	return {
+		type: 'HIDE_ASYCHRONOUS_DIALOGS',
+		payload: 0 
 	}
 }
 
@@ -113,13 +158,18 @@ export {
 	setSpecificBgSize, 
 	setBackgroundOffset, 
 	changeCurrentGesture, 
+	changeCurrentSkipRange,
 	changeBgSlide, 
 	initializePlaybackState, 
 	updatePlaybackState, 
 	updateMediaDuration,
 	setPlaybackState,
 	deleteGestureAtIndex,
+	deleteSkipAtIndex,
 	addGesture,
-	setSkipTime
+	addSkipRange,
+	setSkipRangeTimes,
+	sampleAsychronousAction,
+	HideAsychronousDialogs	
 };
 

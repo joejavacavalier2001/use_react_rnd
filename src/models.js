@@ -17,13 +17,21 @@ Gesture.fields = {
 };
 Gesture.modelName = "Gesture";
 
+class SkipRange extends Model {}
+SkipRange.fields = {
+	skipTime: attr(),
+	resumeTime: attr()
+};
+SkipRange.modelName = "SkipRange";
+
 class Slide extends Model {}
 Slide.fields = {
 	pictfile: attr(),
 	width: attr(),
 	height: attr(),
 	gestureTree: attr(),
-	clearTree: attr()
+	clearTree: attr(),
+	skipTree: attr()
 };
 Slide.modelName = "Slide";
 
@@ -33,9 +41,13 @@ SlideManager.fields = {
 	currentSlide: attr(),
 	currentGestureKey: attr(),
 	currentGestureIndex: attr(),
+	currentSkipKey: attr(),
+	currentSkipIndex: attr(),
 	playbackDuration: attr(),
 	playbackIsPlaying: attr(),
-	playbackJumpTime: attr()
+	playbackJumpTime: attr(),
+	showAsynchronousDialogs: attr(),
+	valueAsychronousDialog: attr()
 };
 SlideManager.modelName = "SlideManager";
 
@@ -45,14 +57,16 @@ PlaybackManager.fields = {
 	currentPlaybackClearIt: attr(),
 	currentPlaybackDisplayGestures: attr(),
 	currentPlaybackSlide: attr(),
-	playbackGesturesIndecies: attr()
+	playbackGesturesIndecies: attr(),
+	currentPlaybackSkipIt: attr(),
+	shouldSkip: attr(),
+	skipTime: attr()
 };
 PlaybackManager.modelName = "PlaybackManager";
 
-var orm = new ORM({stateSelector: state => state.orm});
-orm.register(SlideManager,Slide,Gesture,ClearObj,PlaybackManager);
-export function OrmManager() {}
-OrmManager.orm = orm;
-//export {SlideManager, Slide, Gesture, ClearObj};
+var orm = new ORM({stateSelector: state => state});
+orm.register(SlideManager,Slide,Gesture,ClearObj,PlaybackManager,SkipRange);
+export default orm;
+export {SlideManager, Slide, Gesture, ClearObj};
 
 

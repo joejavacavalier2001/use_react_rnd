@@ -1,6 +1,5 @@
 import { createSelector } from 'redux-orm';
-import {OrmManager} from "./models";
-var orm = OrmManager.orm;
+import orm from "./models";
 
 // ************************************************************************************************
 // use selectors to avoid duplicating pieces of information in different places in the state object!
@@ -8,6 +7,30 @@ var orm = OrmManager.orm;
 // One major advantage to using selectors, I can read these parts of the "state" and 
 // it will automatically update from the other parts of the data structure
 // ************************************************************************************************
+
+const whichAsychronousDialogs = createSelector(
+	orm,
+	session => {
+		let asychArray = session.SlideManager.first().showAsynchronousDialogs;
+		let index = asychArray.lastIndexOf(true);
+		let returnValue = "none";
+		switch(index){
+			case 0:
+				returnValue = "pending";
+				break;
+			case 1:
+				returnValue = "fulfilled";
+				break;
+			case 2:
+				returnValue = "rejected";
+				break;
+			default:
+				returnValue = "none";
+				break;
+			}
+		return returnValue; 
+	}
+);
 
 const gestureList2 = createSelector(
 	orm,
@@ -19,9 +42,36 @@ const gestureList2 = createSelector(
 	}
 );
 
-const slideURLs = createSelector(
+const skipRanges = createSelector(
 	orm,
 	session => {
+		let slideMgr = session.SlideManager.first();
+		let {slides, currentSlide} = slideMgr;
+		let rawSkipRanges = slides[currentSlide].skipTree.values;
+		return rawSkipRanges.map((skipRangeObj) => {return [skipRangeObj.skipTime, skipRangeObj.resumeTime];});
+	}
+);
+
+const skipTimeInfo = createSelector(
+	orm,
+	session => {
+		if (session.PlaybackManager.count()){
+			let playbackMgr = session.PlaybackManager.first();
+			return {shouldSkip: playbackMgr.shouldSkip, skipTime: playbackMgr.skipTime};
+		} else {
+			return {shouldSkip: false, skipTime: 0};
+		}
+	}
+);
+
+
+const slideURLs = createSelector(
+	orm,
+	(session) => {
+		if (!session.SlideManager.count()){
+			alert("bad selector"); 
+			return null;
+		}
 		let slideMgr = session.SlideManager.first();
 		return slideMgr.slides.map((slideObj) => {return slideObj.pictfile;});
 	}
@@ -81,6 +131,14 @@ const currentGestureIndex = createSelector(
 	session => {
 		let slideMgr = session.SlideManager.first();
 		return slideMgr.currentGestureIndex;
+	}
+);
+
+const currentSkipIndex = createSelector(
+	orm,
+	session => {
+		let slideMgr = session.SlideManager.first();
+		return slideMgr.currentSkipIndex;
 	}
 );
 
@@ -158,7 +216,8 @@ const playbackJumpTime = createSelector(
 );
 
 export {
-	gestureList2, 
+	gestureList2,
+	skipRanges,
 	slideURLs, 
 	slideNameList, 
 	currentSlide,
@@ -166,6 +225,7 @@ export {
 	bgPic, 
 	currentEditingGesture,
 	currentGestureIndex, 
+	currentSkipIndex,
 	currentGestureKey, 
 	slideInfo,
 	playbackSlideInfo,
@@ -173,5 +233,7 @@ export {
 	playbackDuration,
 	playbackIsPlaying,
 	combinedPlaybackStatus,
-	playbackJumpTime
+	playbackJumpTime,
+	whichAsychronousDialogs,
+	skipTimeInfo
 };

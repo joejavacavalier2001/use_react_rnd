@@ -59,7 +59,7 @@ const GesturePicker = (props) => {
 			{renderGestureOptions}
 		</select>
 	    <Button ref={buttonRef} variant="danger" onClick={handleShowDialogClick}>Delete Current Gesture</Button>
-	    {((showDialog) && (<DeleteConfirmDialog currentGestureTimes={currentGestureTimes} dialogCallback={handleDialogCallback} show={showDialog} />))}
+	    {((showDialog) && (<DeleteConfirmDialog skipDialog={false} currentGestureTimes={currentGestureTimes} dialogCallback={handleDialogCallback} show={showDialog} />))}
       </div>) : null
 	  )}
     </div>

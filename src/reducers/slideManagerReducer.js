@@ -1,8 +1,5 @@
 
-import createTree from "functional-red-black-tree";
-import {OrmManager} from "../models";
-var orm = OrmManager.orm;
-var mainArray = window.myslides;
+import orm from "../models";
 
 function isObject(mysteryParam)
 {
@@ -18,86 +15,6 @@ function isObject(mysteryParam)
 
   return output;
 }
-
-function ParseGestureText(strGestureInfo)
-{
-  var piecesStrs = strGestureInfo.split(/,\s*/);
-  if ((piecesStrs.length !== 4) || (piecesStrs.some(value => isNaN(parseFloat(value))))){
-    throw new Error("Gesture info needs to contain four valid numbers for \"left,top,width,height\"");
-  }
-  return piecesStrs.map(value => parseFloat(value));
-}
-
-// ************************** create initial state by reading mainArray **************************************
-const session = orm.session();
-const {SlideManager, Slide, Gesture, ClearObj} = session;
-
-var initialSlideMgr = SlideManager.create({slides: [], currentSlide: 0, currentPlaybackSlide: 0, playbackDuration: 0, playbackIsPlaying: false, currentGestureIndex: 0, playbackJumpTime: 0});
-
-var prefix = mainArray.filter(value => ("Prefix" in value))[0].Prefix;
-prefix = prefix.includes("/",prefix.length-1) ? prefix : (prefix + "/");
-
-var currentGestureTree = null;
-var currentClearTree = null;
-var tempTree = null;
-var gestureNumber = 0;
-var currentSlide = null;
-var parsingGesture = null;
-var currentSlideNumber = -1;
-
-mainArray.forEach((value) => {
-	let currentPosition = value["Position"];
-
-	if ("Slide" in value){
-		currentSlideNumber++;
-		if (currentGestureTree){
-			currentSlide.gestureTree = currentGestureTree;
-			currentSlide.clearTree = currentClearTree;
-			initialSlideMgr.slides.push(currentSlide);
-		}
-		let pfile = value.Slide.substring(1);
-
-		currentSlide = Slide.create({pictfile: prefix + pfile, width: 0, height: 0});
-		if (tempTree){
-			let tempKeys = tempTree.keys;
-			tempKeys.forEach(key => tempTree.remove(key));
-			tempTree = null;
-		}
-		tempTree = createTree();
-		currentGestureTree = createTree();
-		currentClearTree = createTree();
-		gestureNumber = 0;
-
-	} else if ("Gesture" in value){
-		let gLoc = ParseGestureText(value["Gesture"]);
-		let gSize = gLoc.splice(2,2);
-		parsingGesture = Gesture.create({startTime: currentPosition, clearTime: Infinity, location: gLoc, dimensions: gSize, slideNumber: currentSlideNumber});
-		currentGestureTree = currentGestureTree.insert(currentPosition,parsingGesture);
-		tempTree = tempTree.insert(++gestureNumber,currentPosition);
-
-	} else if ("Clear" in value){
-		let startGesturePosition = tempTree.get(value["Clear"]);
-		let oldGestureObj = currentGestureTree.get(startGesturePosition);
-		oldGestureObj.clearTime = currentPosition;
-		currentClearTree = currentClearTree.insert(currentPosition, ClearObj.create({startTime: currentPosition, gestureTime: startGesturePosition}));
-
-	} else if ("Jump" in value) {
-		initialSlideMgr.playbackJumpTime = parseFloat(value.Jump);
-	}
-});
-
-if (currentGestureTree){
-	currentSlide.gestureTree = currentGestureTree;
-	currentSlide.clearTree = currentClearTree;
-	initialSlideMgr.slides.push(currentSlide);	
-}
-if (tempTree){
-	let tempKeys = tempTree.keys;
-	tempKeys.forEach(key => tempTree.remove(key));
-	tempTree = null;
-}
-initialSlideMgr.currentGestureKey = initialSlideMgr.slides[0].gestureTree.begin.key;
-var initialState = session.state;
 
 function SetSpecificBackgroundDimensions_Internal(payload,slideMgr)
 {
@@ -126,8 +43,8 @@ function SetGestureTimes_Internal(session,payload,dbState)
 	let newGestureTree = slides[currentSlide].gestureTree;
 	let newClearTree = slides[currentSlide].clearTree;
 
-    let rawGestures = slides[currentSlide].gestureTree.values;
-    let oldGestureTimeRanges = rawGestures.map((gestureObj) => {return [gestureObj.startTime, gestureObj.clearTime];});
+	let rawGestures = slides[currentSlide].gestureTree.values;
+	let oldGestureTimeRanges = rawGestures.map((gestureObj) => {return [gestureObj.startTime, gestureObj.clearTime];});
 
 	payload.forEach(function(subarray,index){
 		let currentSubArray = this.oldGestureList2[index];
@@ -185,6 +102,48 @@ function SetGestureTimes_Internal(session,payload,dbState)
 	slideMgr.slides = slides.slice();
 }
 
+function SetSkipRangeTimes_Internal(session,payload,dbState)
+{
+	const { SlideManager, SkipRange } = session;
+	let slideMgr = SlideManager.first();
+	const {slides,currentSlide} = slideMgr;
+	let newSkipTree = slides[currentSlide].skipTree;
+
+	let rawSkipRanges = slides[currentSlide].skipTree.values;
+	let oldSkipRanges = rawSkipRanges.map((skipRangeObj) => {return [skipRangeObj.skipTime, skipRangeObj.resumeTime];});
+
+	payload.forEach(function(subarray,index){
+		let currentSubArray = this.oldSkipList[index];
+		let tempBoolArray = [currentSubArray[1] !== subarray[1], currentSubArray[0] !== subarray[0]];
+		const boolreducer = (acc,cv) => {return ((acc*2) + (cv ? 1 : 0));};
+		let bitmask = tempBoolArray.reduce(boolreducer,0);
+		let oldSkipRangeObj = (bitmask) ? newSkipTree.get(currentSubArray[0]) : null;
+		let newSkipRangeObj = null;
+
+		switch (bitmask){
+			case 1: // change start time of gesture
+				newSkipRangeObj = SkipRange.create({...oldSkipRangeObj.ref, skipTime: subarray[0]});
+				newSkipTree = newSkipTree.insert(subarray[0],newSkipRangeObj);
+				newSkipTree = newSkipTree.remove(oldSkipRangeObj.skipTime);
+				oldSkipRangeObj.delete();
+				break;
+			case 2: // change end time of gesture
+				oldSkipRangeObj.resumeTime = subarray[1];
+				break;
+			case 3:  // change both
+				newSkipRangeObj = SkipRange.create({skipTime: subarray[0], resumeTime: subarray[1]});
+				newSkipTree = newSkipTree.insert(subarray[0],newSkipRangeObj);
+				newSkipTree = newSkipTree.remove(oldSkipRangeObj.skipTime);
+				oldSkipRangeObj.delete();
+				break;
+			default:
+				break;
+		}
+	},{oldSkipList: oldSkipRanges});
+	slides[slideMgr.currentSlide].skipTree = newSkipTree;
+	slideMgr.slides = slides.slice();
+}
+
 function ChangeGestureWithinCurrentBg_Internal(slideMgr,payload)
 {
 	let newGestureIndex = parseInt(payload);
@@ -201,91 +160,6 @@ function ChangeBgSlide_Internal(slideMgr,payload)
 	ChangeGestureWithinCurrentBg_Internal(slideMgr,0);
 }
 
-function InitPlayback_Internal(session)
-{
-	const {SlideManager, PlaybackManager} = session;
-	let slideMgr = SlideManager.first();
-	if (PlaybackManager.count())
-		PlaybackManager.first().delete();
-
-	if (slideMgr.playbackIsPlaying)
-		throw new Error("InitPlayback_Internal was called during playback");
-
-	let gestureTree = slideMgr.slides[0].gestureTree;
-	let clearTree = slideMgr.slides[0].clearTree;
-
-	let gestureIt = (gestureTree.length) ? gestureTree.begin : null;
-	let clearIt = (clearTree.length) ? clearTree.begin : null;
-
-	if ((gestureIt) && (gestureIt.key < slideMgr.playbackJumpTime)){
-		gestureIt = gestureTree.le(slideMgr.playbackJumpTime);
-		if (gestureIt.value.clearTime < slideMgr.playbackJumpTime)
-			if (gestureIt.hasNext)
-				gestureIt.next();
-			else
-				gestureIt = null;
-
-		clearIt = (gestureIt) ? clearTree.find(gestureIt.value.clearTime) : null;
-	}
-
-	PlaybackManager.create({
-		currentPlaybackDisplayGestures: [], 
-		currentPlaybackSlide: 0,
-		currentPlaybackGestureIt: gestureIt,
-		currentPlaybackClearIt: clearIt,
-		playbackGesturesIndecies: createTree()
-	});
-}
-
-function UpdateGestureShowListDuringPlayback_Internal(session,payload)
-{
-	let {SlideManager, PlaybackManager} = session;
-	let slideMgr = SlideManager.first();
-	let playbackMgr = PlaybackManager.first();
-	let {currentPlaybackGestureIt, playbackGesturesIndecies, currentPlaybackDisplayGestures, currentPlaybackClearIt} = playbackMgr;
-	let updatedGestures = false;
-
-	if (payload >= slideMgr.playbackDuration){
-		slideMgr.playbackIsPlaying = false;
-		slideMgr.currentPlaybackDisplayGestures = [];
-		return;
-	}
-	if ((currentPlaybackGestureIt) && (payload >= currentPlaybackGestureIt.key)){
-		let playbackObj = currentPlaybackGestureIt.value;
-		currentPlaybackDisplayGestures.push(playbackObj);
-		updatedGestures = true;
-		playbackGesturesIndecies = playbackGesturesIndecies.insert(playbackObj.startTime, (currentPlaybackDisplayGestures.length-1));
-		if (currentPlaybackGestureIt.hasNext)
-			currentPlaybackGestureIt.next();
-		else
-			currentPlaybackGestureIt = null;
-
-		playbackMgr.currentPlaybackGestureIt = currentPlaybackGestureIt;
-		playbackMgr.playbackGesturesIndecies = playbackGesturesIndecies;
-	}
-	if ((currentPlaybackClearIt) && (payload >= currentPlaybackClearIt.key)){
-		let currentPlaybackDisplayGestures = playbackMgr.currentPlaybackDisplayGestures;
-		if (!playbackGesturesIndecies){
-			console.log("strange error");
-			console.log("at time: " + payload + " playbackGestureIndecies is undefined");
-			console.log(new Error().stack);
-			return;
-		}
-		let deleteIndex = playbackGesturesIndecies.get(currentPlaybackClearIt.value.gestureTime).value;
-		currentPlaybackDisplayGestures.splice(deleteIndex,1);
-		updatedGestures = true;
-
-		if (currentPlaybackClearIt.hasNext)
-			currentPlaybackClearIt.next();
-		else
-			currentPlaybackClearIt = null;
-
-		playbackMgr.currentPlaybackClearIt = currentPlaybackClearIt;
-	}
-
-	if (updatedGestures)
-		playbackMgr.currentPlaybackDisplayGestures = currentPlaybackDisplayGestures.slice();
-}
 
 function DeleteGestureAtIndex_Internal(slideMgr,payload)
 {
@@ -309,6 +183,31 @@ function DeleteGestureAtIndex_Internal(slideMgr,payload)
 	}
 
 	slides[currentSlide].gestureTree = gestureTree;
+	slideMgr.slides = slides.slice();
+}
+
+function DeleteSkipAtIndex_Internal(slideMgr,payload)
+{
+	let index = parseInt(payload);
+	let {slides, currentSlide} = slideMgr;
+
+	let skipTree = slides[currentSlide].skipTree;
+	let skipRangeObj = skipTree.at(index).value;
+	skipTree = skipTree.remove(skipRangeObj.skipTime);
+	skipRangeObj.delete();
+
+	if (skipTree.length){
+		if ((index + 1) > skipTree.length)
+			index--;
+		skipRangeObj = skipTree.at(index).value;
+		slideMgr.currentSkipIndex = index;
+		slideMgr.currentSkipKey = skipRangeObj.skipTime;
+	} else {
+		slideMgr.currentSkipKey = 0;
+		slideMgr.currentSkipIndex = 0;
+	}
+
+	slides[currentSlide].skipTree = skipTree;
 	slideMgr.slides = slides.slice();
 }
 
@@ -348,15 +247,54 @@ function AddGesture_Internal(session,slideMgr,payload)
 	if (newMin < oldGestureTree.end.key){
 		slideMgr.currentGestureKey = newGestureTree.at(currentGestureIndex).key;
 	}
-
 }
 
-const gestureReducer = (dbState = initialState, action) => {
-	if (!dbState) return {};
+function AddSkip_Internal(session,slideMgr,payload)
+{
+	const {SkipRange} = session;
+	const {slides, currentSlide,playbackDuration} = slideMgr;
+
+	const oldSkipTree = slides[currentSlide].skipTree;
+	let newMin = 0;
+	let newMax = 0;
+	let newValueInRange = payload[0];
+	let step = payload[1];
+	oldSkipTree.forEach((key,skipRangeObj) => {
+		if (key > newValueInRange){
+			newMax = key;
+			return true;
+		} else {
+			newMin = skipRangeObj.resumeTime;
+		}
+		return false;
+	});
+	if (!newMax)
+		newMax = playbackDuration;
+
+	if (newMin)
+		newMin += step;
+
+	if (!oldSkipTree.length){
+		slideMgr.currentSkipIndex = 0;
+		slideMgr.currentSkipKey = newMin;
+	}
+
+	let newSkipRangeObj = SkipRange.create({skipTime: newMin, resumeTime: newMax});
+	let newSkipTree = oldSkipTree.insert(newMin,newSkipRangeObj);
+	slides[currentSlide].skipTree = newSkipTree;
+	slideMgr.slides = slides.slice();
+}
+
+
+const gestureReducer = (dbState, action) => {
+	if (!dbState)return {};
 	
 	const sess = orm.session(dbState);
+	if (action.type.search(/redux\/INIT/) !== -1){
+		return dbState;
+	}
 
-	if ((isObject(action)) && ("payload" in action) && ("type" in action)){
+	if ((isObject(action)) && ("type" in action)){
 		const {SlideManager} = sess;
 		let slideMgr = SlideManager.first();
 
@@ -372,8 +310,14 @@ const gestureReducer = (dbState = initialState, action) => {
 		  case 'SET_GESTURE_TIMES':
 			SetGestureTimes_Internal(sess,action.payload,dbState);
 			break;
+		  case 'SET_SKIP_TIMES':
+			SetSkipRangeTimes_Internal(sess,action.payload,dbState);
+			break;
 		  case 'CHANGE_GESTURE_WITHIN_CURRENT_BG':
 			ChangeGestureWithinCurrentBg_Internal(slideMgr,action.payload);
+			break;
+		  case 'CHANGE_SKIPRANGE':
+			slideMgr.currentSkipIndex = parseInt(action.payload);
 			break;
 		  case 'CHANGE_BG_SLIDE':
 			ChangeBgSlide_Internal(slideMgr,action.payload);
@@ -381,26 +325,31 @@ const gestureReducer = (dbState = initialState, action) => {
 		  case 'UPDATE_MEDIA_DURATION':
 			slideMgr.playbackDuration = action.payload;
 			break;
-		  case 'INIT_PLAYBACK':
-			InitPlayback_Internal(sess);
-			break;
-		  case 'SET_PLAYING_STATE':
-			slideMgr.playbackIsPlaying = action.payload;
-			break;
-		  case 'UPDATE_GESTURE_SHOW_LIST_DURING_PLAYBACK':
-			UpdateGestureShowListDuringPlayback_Internal(sess,action.payload);
-			break;
 		  case 'DELETE_GESTURE_AT_INDEX':
 			DeleteGestureAtIndex_Internal(slideMgr,action.payload);
+			break;
+		  case 'DELETE_SKIPRANGE_AT_INDEX':
+			DeleteSkipAtIndex_Internal(slideMgr,action.payload);
 			break;
 		  case 'ADD_GESTURE':
 			AddGesture_Internal(sess,slideMgr,action.payload);
 			break;
-		  case 'SET_SKIP_TIME':
-			slideMgr.playbackJumpTime = action.payload;
+		  case 'ADD_SKIPRANGE':
+			AddSkip_Internal(sess,slideMgr,action.payload);
+			break;
+		  case 'ASYCH_PENDING':
+			slideMgr.showAsynchronousDialogs = [true, false, false];	
+			break;
+		  case 'ASYCH_FULFILLED':
+			slideMgr.showAsynchronousDialogs = [false, true, false];	
+			break;
+		  case 'ASYCH_REJECTED':
+			slideMgr.showAsynchronousDialogs = [false, false, true];	
+			break;
+		  case 'HIDE_ASYCHRONOUS_DIALOGS':
+			slideMgr.showAsynchronousDialogs = [false, false, false];
 			break;
 		  default:
-			console.log("Inside default reducer case and action type is " + action.type);
 			break;
 		}
 	}

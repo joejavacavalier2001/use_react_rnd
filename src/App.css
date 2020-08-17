@@ -4,28 +4,35 @@
 #select_image_panel, #select_gesture_panel {display: flex; margin: 1em 0 0;}
 p {margin:0;}
 #select_image_panel p, #select_gesture_panel p {margin: 0 1em 0 0 !important;}
-#select_gesture_panel .btn-danger {margin: 5px 2em 2px !important; padding: 1px 2px; font-size: smaller; position: relative; top: -0.5em;}
+#select_gesture_panel > .btn-danger {margin: 5px 2em 2px !important; padding: 1px 2px; font-size: smaller; position: relative; top: -0.5em;}
 #select_gesture {height: 1.5em;}
+#select_skip {margin-top: 0.5em;}
 #GestureEditLayer {z-index: 0;}
-.preloadedImages {display: none;}
+.hiddenColumn  {display: none;}
 #GestureEditLayer .react-draggable, #GesturePlayback .react-draggable {background-color: rgba(50, 205, 50, 0.4);}
+#media-container {padding-left: 0 !important;}
+#media-container .row div button {margin-left: 0 !important;}
+
+div.col-md-auto > .btn-danager {padding: 0.375rem 0.75rem !important; margin: 0 !important; top: 0 !important;}
+.duxpanel-heading {text-align: center; font-size: large; font-weight: bold; background-color: lightskyblue;}
+.duxpanel {border: 1px solid black !important;}
 
 /* https://stackoverflow.com/questions/38377062/how-to-make-html-button-look-pressed-in-using-css */
 button.btn {
-	box-shadow: 2px 1px 2px gray;
-    margin: 4px 10px 4px 10px;
+  box-shadow: 2px 1px 2px gray;
+  margin: 4px 10px 4px 10px;
 }
 button.btn:active {
-	box-shadow: 0 0 0 white !important;
-    margin: 6px 10px 2px 10px !important;
+  box-shadow: 0 0 0 white !important;
+  margin: 6px 10px 2px 10px !important;
 }
 button.btn-danger {
-	color: black !important;
-	background-color: #fb6877 !important;
+  color: black !important;
+  background-color: #fb6877 !important;
 }
 button.btn-danger:hover {
-	color: #042af7 !important;
-	background-color: #ff9ca6 !important;
+  color: #042af7 !important;
+  background-color: #ff9ca6 !important;
 }
 
 .railOuterStyle {

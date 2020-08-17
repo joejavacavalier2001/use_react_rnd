@@ -2,8 +2,8 @@ import React, {useMemo, useCallback} from 'react';
 import {Slider, Rail, Handles, Tracks, Ticks} from "react-compound-slider";
 import {Handle, SliderRail, Tick, Track} from "./SliderSubComponents/CombinedExports";
 import {connect} from "react-redux";
-import {playbackDuration, playbackJumpTime} from "./selectors";
-import {setSkipTime} from "./actions/gestureActions.js";
+import {playbackDuration, currentSkipIndex, skipRanges} from "./selectors";
+import {setSkipRangeTimes,addSkipRange} from "./actions/gestureActions.js";
 
 const GestureSkipSlider = (props) => {
   const sliderStyle = {
@@ -16,15 +16,23 @@ const GestureSkipSlider = (props) => {
 
   const newStep = useMemo(() => {return +(1/(Math.pow(10,props.decimalPlaces)).toFixed(props.decimalPlaces));},[props]);
   const domain = useMemo(() => {return [0, props.playbackDuration];},[props]);
-  const defaultValues = useMemo(() => {return [props.playbackJumpTime];},[props]); 
-
-  const handleOnChange = useCallback((e) => {
-	  console.log("Inside handleOnChange, e: " + e.toString());
-	  props.setSkipTime(+(e[0].toFixed(props.decimalPlaces)));
+  //const [defaultValues,setValues] = useState([]); 
+  const defaultValues = useMemo(() => { 
+	  var output = [].concat(...props.skipRanges);
+	  return output;
   },[props]);
 
-  const handleOnInsert = useCallback((rawValue) => {
-	  props.addGesture(rawValue.toFixed(props.decimalPlaces),newStep);
+  const handleOnChange = useCallback((e) => {
+	  let newSkipRangeTimes = [];
+	  let tempArray = e.map(element => +(element.toFixed(props.decimalPlaces)));
+	  while (tempArray.length > 0)
+		  newSkipRangeTimes.push(tempArray.splice(0,2));
+
+	  props.setSkipRangeTimes(newSkipRangeTimes);
+  },[props]);
+
+  const handleOnGrayClick = useCallback((rawValue) => {
+	  props.addSkipRange(rawValue.toFixed(props.decimalPlaces),newStep);
   },[props,newStep]);
 
   return (
@@ -38,7 +46,7 @@ const GestureSkipSlider = (props) => {
           values={defaultValues}
         >
           <Rail>
-            {({ getEventData, activeHandleID, getRailProps }) => <SliderRail getEventData={getEventData} activeHandleID={activeHandleID} getRailProps={getRailProps} onInsert={handleOnInsert} />}
+            {({ getEventData, activeHandleID, getRailProps }) => <SliderRail getEventData={getEventData} activeHandleID={activeHandleID} getRailProps={getRailProps} onInsert={handleOnGrayClick} />}
           </Rail>
           <Handles>
             {({ handles, getHandleProps }) => (
@@ -55,7 +63,7 @@ const GestureSkipSlider = (props) => {
               </div>
             )}
           </Handles>
-          <Tracks right={false}>
+          <Tracks left={false} right={false}>
             {({ tracks, getTrackProps }) => (
               <div className="slider-tracks">
                 {tracks.map(({ id, source, target },tIndex) => {
@@ -65,7 +73,7 @@ const GestureSkipSlider = (props) => {
                     source={source}
                     target={target}
                     tIndex={Math.floor(tIndex/2) + 1}
-					currentTrack={0}
+					currentTrack={props.currentSkipIndex}
                     getTrackProps={getTrackProps}
                   />) : null;
                   })}
@@ -89,13 +97,17 @@ const GestureSkipSlider = (props) => {
 const mapStateToProps = (state) => {
   return {
 	playbackDuration: playbackDuration(state),//state.currentGesture.playbackDuration,
-	playbackJumpTime: playbackJumpTime(state)
+	skipRanges: skipRanges(state),
+	currentSkipIndex: currentSkipIndex(state),
   };
 };
 const mapDispatchToProps = (dispatch) => {
     return {
-      setSkipTime: (newSkipTime) => {
-        dispatch(setSkipTime(newSkipTime));
+      setSkipRangeTimes: (newSkipTimes) => {
+        dispatch(setSkipRangeTimes(newSkipTimes));
+      },
+      addSkipRange: (newValueInRange, step) => {
+        dispatch(addSkipRange(newValueInRange,step));
       }
     };
 };
