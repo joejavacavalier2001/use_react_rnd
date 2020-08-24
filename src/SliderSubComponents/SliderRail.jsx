@@ -1,5 +1,5 @@
 import React from 'react';
-const SliderRail = ({ getEventData, activeHandleID, getRailProps, onInsert }) => {
+const SliderRail = ({ getEventData, activeHandleID, getRailProps, onInsert, handleTooltipShow, handleTooltipHide }) => {
 	let handleOnMouseDown = (e) => {
 		e.stopPropagation();
 		e.preventDefault();
@@ -8,7 +8,7 @@ const SliderRail = ({ getEventData, activeHandleID, getRailProps, onInsert }) =>
 	};
 	return (
 		<>
-		  <div className="railOuterStyle" onMouseDown={handleOnMouseDown} /> 
+		  <div className="railOuterStyle" onMouseDown={handleOnMouseDown} onMouseOver={handleTooltipShow} onMouseOut={handleTooltipHide}/> 
 		  <div className="railInnerStyle" />
 		</>
 	);

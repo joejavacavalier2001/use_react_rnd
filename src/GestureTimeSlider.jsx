@@ -1,4 +1,4 @@
-import React, {useMemo, useCallback} from 'react';
+import React, {useState, useMemo, useCallback} from 'react';
 import {Slider, Rail, Handles, Tracks, Ticks} from "react-compound-slider";
 import {Handle, SliderRail, Tick, Track} from "./SliderSubComponents/CombinedExports";
 import {setGestureTimes} from "./actions/gestureActions";
@@ -36,8 +36,34 @@ const GestureTimeSlider = (props) => {
 	  props.addGesture(rawValue.toFixed(props.decimalPlaces),newStep);
   },[props,newStep]);
 
+  let [shouldShowTooltip, setShow] = useState(false);
+  let handleMouseOver = useCallback((event) => {
+	  if (event.currentTarget === event.target)
+	  	setShow(true);
+
+	  event.stopPropagation();
+  }
+  ,[setShow]);
+  let handleMouseOut = useCallback((event) => {
+	  if (event.currentTarget === event.target)
+	  	setShow(false);
+
+	  event.stopPropagation();
+  }
+  ,[setShow]);
+
   return (
-	  <div className="GestureTimeSliderStaticStyle">
+	  <div className="GestureTimeSliderStaticStyle" onMouseOver={handleMouseOver} onMouseOut={handleMouseOut}>
+	  {
+		  (shouldShowTooltip) && 
+		  (
+			<div className="SliderTooltip">
+			  <p>Instructions: Please click on the gray bar in the slider to add</p>
+			  <p>a scheduled gesture. Use the editor below to change the size and position of the gesture.</p>
+			  <p>You can use the slider handles to change the start and stop time of each gesture.</p>
+			</div>
+		  )
+	  }
 		<Slider
           mode={3}
           step={newStep}
@@ -47,7 +73,8 @@ const GestureTimeSlider = (props) => {
           values={defaultValues}
         >
           <Rail>
-            {({ getEventData, activeHandleID, getRailProps }) => <SliderRail getEventData={getEventData} activeHandleID={activeHandleID} getRailProps={getRailProps} onInsert={handleOnInsert} />}
+            {({ getEventData, activeHandleID, getRailProps }) => 
+				(<SliderRail getEventData={getEventData} activeHandleID={activeHandleID} getRailProps={getRailProps} onInsert={handleOnInsert} handleTooltipShow={handleMouseOver} handleTooltipHide={handleMouseOut} />)}
           </Rail>
           <Handles>
             {({ handles, getHandleProps }) => (

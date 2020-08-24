@@ -28,7 +28,7 @@ const GestureSkipPicker = (props) => {
   let handleDialogCallback = useCallback((shouldDelete) => {
 	  ChangeDialogStatus(false); 
 	  if (shouldDelete)
-		  props.deleteGestureAtIndex(props.currentIndex);
+		  props.deleteSkipAtIndex(props.currentIndex);
   },[ChangeDialogStatus,props]);
   let currentSkipTimes = useMemo(() => {return props.skipTimes[props.currentSkipIndex];},[props]);
   useEffect(() => {
@@ -39,7 +39,7 @@ const GestureSkipPicker = (props) => {
 	  <>
 	  {((props.skipTimes.length) ?
 	  (
-		<Container fluid>
+		<Container id="skipselector_block" fluid>
 		<Row>
 		  	<Col><p>Select a skip range to delete:</p></Col>
 		</Row>

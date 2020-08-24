@@ -32,6 +32,8 @@ const GestureEditLayerParent = (props) => {
 	  			<Row> 
 	  				<Col> 
 	  					<h1>Gesture Player</h1>
+	  					<p>Please edit the gestures on the right side of this screen and</p>
+	  					<p>click on the Restart button to see the gestures appear during the media playback.</p>
 	  					<ReactMediaWrapper /> 
 	  					<GesturePlayback />
 	  				</Col> 

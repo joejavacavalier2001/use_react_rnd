@@ -7,6 +7,7 @@ p {margin:0;}
 #select_gesture_panel > .btn-danger {margin: 5px 2em 2px !important; padding: 1px 2px; font-size: smaller; position: relative; top: -0.5em;}
 #select_gesture {height: 1.5em;}
 #select_skip {margin-top: 0.5em;}
+#skipselector_block {border: black 1px solid;}
 #GestureEditLayer {z-index: 0;}
 .hiddenColumn  {display: none;}
 #GestureEditLayer .react-draggable, #GesturePlayback .react-draggable {background-color: rgba(50, 205, 50, 0.4);}
@@ -107,12 +108,26 @@ button.btn-danger:hover {
   border: 1px black solid;
   background-color: #ddefff;
 }
+.SliderTooltip
+{
+  /*background-color: 'rgba(255, 100, 100, 0.85)';*/
+  position: absolute;
+  z-index:100;
+  top:-2em;
+  min-width:5em;
+  background-color: orange;
+  padding-left: 5px;
+  color: black;
+  border-radius: 3px;
+  display: inline-block;
+  font-size:smaller;
+}
 .SliderHandleTooltip
 {
   /*background-color: 'rgba(255, 100, 100, 0.85)';*/
-  position: relative;
+  position: absolute;
   z-index:100;
-  top:-2em;
+  top:-1.5em;
   left:-1em;
   min-width:5em;
   background-color: orange;
