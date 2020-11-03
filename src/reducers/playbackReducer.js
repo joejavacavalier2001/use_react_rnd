@@ -1,5 +1,5 @@
 
-import createTree from "functional-red-black-tree";
+//import createTree from "functional-red-black-tree";
 import orm from "../models";
 
 function isObject(mysteryParam)
@@ -35,7 +35,7 @@ function InitPlayback_Internal(session)
 	let clearIt = (clearTree.length) ? clearTree.begin : null;
 	let skipIt = (skipTree.length) ? skipTree.begin : null;
 
-	if ((gestureIt) && (gestureIt.key < slideMgr.playbackJumpTime)){
+	/*if ((gestureIt) && (gestureIt.key < slideMgr.playbackJumpTime)){
 		gestureIt = gestureTree.le(slideMgr.playbackJumpTime);
 		if (gestureIt.value.clearTime < slideMgr.playbackJumpTime)
 			if (gestureIt.hasNext)
@@ -44,15 +44,15 @@ function InitPlayback_Internal(session)
 				gestureIt = null;
 
 		clearIt = (gestureIt) ? clearTree.find(gestureIt.value.clearTime) : null;
-	}
+	}*/
 
 	PlaybackManager.create({
-		currentPlaybackDisplayGestures: [], 
+		//currentPlaybackDisplayGestures: [], 
 		currentPlaybackSlide: 0,
 		currentPlaybackGestureIt: gestureIt,
 		currentPlaybackClearIt: clearIt,
 		currentPlaybackSkipIt: skipIt,
-		playbackGesturesIndecies: createTree(),
+		currentPlaybackDisplayGestures: [],
 		shouldSkip: false,
 		skipTime: 0
 	});
@@ -63,35 +63,40 @@ function UpdateGestureShowListDuringPlayback_Internal(session,payload)
 	let {SlideManager, PlaybackManager} = session;
 	let slideMgr = SlideManager.first();
 	let playbackMgr = PlaybackManager.first();
-	let {currentPlaybackGestureIt, playbackGesturesIndecies, currentPlaybackDisplayGestures, currentPlaybackClearIt, currentPlaybackSkipIt} = playbackMgr;
+	let {currentPlaybackGestureIt, currentPlaybackDisplayGestures, currentPlaybackClearIt, currentPlaybackSkipIt} = playbackMgr;
 	let updatedGestures = false;
 
 	if (playbackMgr.shouldSkip)
 		playbackMgr.shouldSkip = false;
 
 	if (payload >= slideMgr.playbackDuration){
+		console.log("playback reached duration");
 		slideMgr.playbackIsPlaying = false;
 		slideMgr.currentPlaybackDisplayGestures = [];
 		return;
 	}
 	if ((currentPlaybackGestureIt) && (payload >= currentPlaybackGestureIt.key)){
 		let playbackObj = currentPlaybackGestureIt.value;
-		currentPlaybackDisplayGestures.push(playbackObj);
+
+		console.log("adding gesture to display: startTime = " + playbackObj.startTime + " , clearTime = " + playbackObj.clearTime + " , at time = " + payload);
+		//allow for easy filtering by having start and clear times as separate object properties in each array item
+		currentPlaybackDisplayGestures.push({startTime: playbackObj.startTime, clearTime: playbackObj.clearTime, gesture: playbackObj});
+
 		updatedGestures = true;
-		playbackGesturesIndecies = playbackGesturesIndecies.insert(playbackObj.startTime, (currentPlaybackDisplayGestures.length-1));
+
 		if (currentPlaybackGestureIt.hasNext)
 			currentPlaybackGestureIt.next();
 		else
 			currentPlaybackGestureIt = null;
 
 		playbackMgr.currentPlaybackGestureIt = currentPlaybackGestureIt;
-		playbackMgr.playbackGesturesIndecies = playbackGesturesIndecies;
 	}
 	if ((currentPlaybackClearIt) && (payload >= currentPlaybackClearIt.key)){
-		let currentPlaybackDisplayGestures = playbackMgr.currentPlaybackDisplayGestures;
-		let deleteIndex = playbackGesturesIndecies.get(currentPlaybackClearIt.value.gestureTime).value;
-		currentPlaybackDisplayGestures.splice(deleteIndex,1);
-		updatedGestures = true;
+
+		console.log("found clear event for time = " + currentPlaybackClearIt.key);
+		// if I'm trimming the display array, ensure the copy in the display manager will be updated
+		updatedGestures = updatedGestures || (currentPlaybackDisplayGestures.some((arrayItem) => {return arrayItem.clearTime <= currentPlaybackClearIt.key;}));  
+		currentPlaybackDisplayGestures = currentPlaybackDisplayGestures.filter((arrayItem) => {return arrayItem.clearTime > currentPlaybackClearIt.key;});
 
 		if (currentPlaybackClearIt.hasNext)
 			currentPlaybackClearIt.next();
@@ -100,17 +105,16 @@ function UpdateGestureShowListDuringPlayback_Internal(session,payload)
 
 		playbackMgr.currentPlaybackClearIt = currentPlaybackClearIt;
 	}
-
-	if (updatedGestures)
-		playbackMgr.currentPlaybackDisplayGestures = currentPlaybackDisplayGestures.slice();
 	
 	if ((currentPlaybackSkipIt) && (payload >= currentPlaybackSkipIt.key)){
 		console.log("Detected skip range in playback");
 		let currentSkipRangeObj = currentPlaybackSkipIt.value;
 		console.log("skipTime = " + currentSkipRangeObj.skipTime + ", resumeTime = " + currentSkipRangeObj.resumeTime);
-		console.log("playback gesture count before filter: " + currentPlaybackDisplayGestures.length);
-		currentPlaybackDisplayGestures = currentPlaybackDisplayGestures.filter(gestureObj => gestureObj.clearTime >= currentSkipRangeObj.resumeTime);
-		console.log("playback gesture count after filter: " + currentPlaybackDisplayGestures.length);
+
+		// if I'm trimming the display array, ensure the copy in the display manager will be updated
+		updatedGestures = updatedGestures || (currentPlaybackDisplayGestures.some((arrayItem) => {return arrayItem.clearTime < currentSkipRangeObj.resumeTime;})); 
+		currentPlaybackDisplayGestures = currentPlaybackDisplayGestures.filter((arrayItem) => {return arrayItem.clearTime >= currentSkipRangeObj.resumeTime});
+
 		let tempGTree = currentPlaybackGestureIt.tree;
 		let tempIt = tempGTree.le(currentSkipRangeObj.resumeTime);
 
@@ -120,10 +124,8 @@ function UpdateGestureShowListDuringPlayback_Internal(session,payload)
 				if ((tempGesture.startTime >= currentSkipRangeObj.skipTime) && (tempGesture.clearTime >= currentSkipRangeObj.resumeTime)){
 					console.log("found possible gesture to add to display");
 					console.log("startTime = " + tempGesture.startTime + ", clearTime = " + tempGesture.clearTime);
-					currentPlaybackDisplayGestures.push(tempGesture);
-					playbackMgr.currentPlaybackDisplayGestures = currentPlaybackDisplayGestures.slice();
-					console.log("display gesture count after adding: " + playbackMgr.currentPlaybackDisplayGestures.length);
-					playbackMgr.playbackGesturesIndecies = playbackGesturesIndecies.insert(tempGesture.startTime, (currentPlaybackDisplayGestures.length-1));
+					updatedGestures = true;
+					currentPlaybackDisplayGestures.push({startTime: tempGesture.startTime, clearTime: tempGesture.clearTime, gesture: tempGesture});
 				} 
 				if (tempIt.hasNext)
 					tempIt.next();
@@ -133,6 +135,7 @@ function UpdateGestureShowListDuringPlayback_Internal(session,payload)
 			}
 		} else {
 			console.log("did not find any possible gestures to add to display");
+
 			playbackMgr.currentPlaybackGestureIt = tempGTree.ge(currentSkipRangeObj.resumeTime);
 		}
 		if (currentPlaybackSkipIt.hasNext)
@@ -144,6 +147,13 @@ function UpdateGestureShowListDuringPlayback_Internal(session,payload)
 		playbackMgr.shouldSkip = true;
 		playbackMgr.skipTime = currentSkipRangeObj.resumeTime;
 	}
+
+	if (updatedGestures){
+		console.log("updating gestures array at time = " + payload);
+		playbackMgr.currentPlaybackDisplayGestures = ((currentPlaybackDisplayGestures.length) ? currentPlaybackDisplayGestures.slice() : []);
+		console.log("display list contains " + playbackMgr.currentPlaybackDisplayGestures.length + " gesture(s)");
+		console.log(" ");
+	} 
 }
 
 const playbackReducer = (dbState, action) => {
