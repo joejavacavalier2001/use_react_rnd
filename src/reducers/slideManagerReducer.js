@@ -37,6 +37,7 @@ function SetCurrentGestureInfo_Internal(payload,slideMgr)
 
 function SetGestureTimes_Internal(session,payload,dbState)
 {
+	console.log("inside SetGestureTimes_Internal");
 	const { SlideManager,ClearObj, Gesture } = session;
 	let slideMgr = SlideManager.first();
 	const {slides,currentSlide} = slideMgr;
@@ -83,7 +84,7 @@ function SetGestureTimes_Internal(session,payload,dbState)
 
 				if (oldGestureObj.clearTime !== Infinity){
 					oldClearObj = newClearTree.get(oldGestureObj.clearTime);
-					newClearObj = ClearObj.create({...oldClearObj.ref, startTime: subarray[1]});
+					newClearObj = ClearObj.create({gestureTime: subarray[0], startTime: subarray[1]});
 					newClearTree = newClearTree.remove(oldGestureObj.clearTime);
 					oldClearObj.delete();
 				} else 
@@ -99,7 +100,22 @@ function SetGestureTimes_Internal(session,payload,dbState)
 	},{oldGestureList2: oldGestureTimeRanges});
 	slides[slideMgr.currentSlide].gestureTree = newGestureTree;
 	slides[slideMgr.currentSlide].clearTree = newClearTree;
+	slideMgr.currentGestureKey = payload[slideMgr.currentGestureIndex][0];
 	slideMgr.slides = slides.slice();
+
+	console.log("new gesture clear tree lists");
+	slides[slideMgr.currentSlide].gestureTree.forEach((key,currentGestureObj) => {
+		console.log("at gesture key: " + key);
+		console.log("startTime: " + currentGestureObj.startTime);
+		console.log("clearTime: " + currentGestureObj.clearTime);
+		console.log(" ");
+	});
+	slides[slideMgr.currentSlide].clearTree.forEach((key,currentClearObj) => {
+		console.log("at clear key: " + key);
+		console.log("gestureTime: " + currentClearObj.gestureTime);
+		console.log("startTime: " + currentClearObj.startTime);
+		console.log(" ");
+	});
 }
 
 function SetSkipRangeTimes_Internal(session,payload,dbState)
@@ -247,6 +263,19 @@ function AddGesture_Internal(session,slideMgr,payload)
 	if (newMin < oldGestureTree.end.key){
 		slideMgr.currentGestureKey = newGestureTree.at(currentGestureIndex).key;
 	}
+	console.log("new gesture clear tree lists");
+	slides[slideMgr.currentSlide].gestureTree.forEach((key,currentGestureObj) => {
+		console.log("at gesture key: " + key);
+		console.log("startTime: " + currentGestureObj.startTime);
+		console.log("clearTime: " + currentGestureObj.clearTime);
+		console.log(" ");
+	});
+	slides[slideMgr.currentSlide].clearTree.forEach((key,currentClearObj) => {
+		console.log("at clear key: " + key);
+		console.log("gestureTime: " + currentClearObj.gestureTime);
+		console.log("startTime: " + currentClearObj.startTime);
+		console.log(" ");
+	});
 }
 
 function AddSkip_Internal(session,slideMgr,payload)

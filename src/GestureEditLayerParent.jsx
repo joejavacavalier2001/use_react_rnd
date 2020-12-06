@@ -11,6 +11,8 @@ import GesturePlayback from "./GesturePlayback";
 import GestureSliderParent from "./GestureSliderParent";
 import {playbackDuration, slideURLs} from "./selectors";
 import ShowTriggerAsychAction from "./ShowTriggerAsychAction";
+import ReactGoogleLoginWrapper from "./ReactGoogleLoginWrapper";
+import ReactGoogleResponse from "./ReactGoogleResponse";
 
 const GestureEditLayerParent = (props) => {
   let preloadedImages = props.slideURLs.map((url,index) => {
@@ -23,9 +25,16 @@ const GestureEditLayerParent = (props) => {
 	  		<Col bsPrefix="hiddenColumn">{preloadedImages}</Col>
 		</Row>
 
+	  	<Row>
+	  		<Col bsPrefix="centerHeader">
+	  			<h2> TorahTechnologies.org </h2>
+	  			<h3>DafBoard Multi-Sensory Presentation</h3>
+	  		</Col>
+	  	</Row>
 	  	{/*This block of elements allow the triggering of a fake asychronous action */}
 		<Row><Col><ShowTriggerAsychAction /></Col></Row>
-	    
+		<Row><Col><ReactGoogleLoginWrapper /></Col></Row>	    
+		<Row><Col><ReactGoogleResponse /></Col></Row>	    
 
 	  	<Row>
 	  		<Col>

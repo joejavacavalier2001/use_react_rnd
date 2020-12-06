@@ -65,7 +65,7 @@ const ReactMediaWrapper = (props) => {
 				<Col><p>Current time: {displayTime} seconds</p></Col>
 			</Row>))}
 			<Row>
-				<Col md="auto"><Button variant="primary" onClick={handleRestartClick}>Restart</Button></Col>
+				<Col md="auto"><Button variant="primary" onClick={handleRestartClick}>Restart media playback</Button></Col>
 				{((props.playbackIsPlaying) && (<Col md="auto"><Button variant="primary" onClick={handleStopClick}>Stop</Button></Col>))}
 			</Row>
 		</Container>

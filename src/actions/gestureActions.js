@@ -1,3 +1,4 @@
+import axios from 'axios';
 
 function setBackgroundOffset(bgOffset)
 {
@@ -152,6 +153,81 @@ function HideAsychronousDialogs() {
 	}
 }
 
+function TestTokenIdOnServer(token_id) {
+	return {
+		type: 'TOKEN_TEST',
+		payload: new Promise((resolve,reject) => {
+			axios({
+				url: "http://rktlebnhwebworks.net/testTokenId.py",
+				headers:{'Content-Type': 'application/json'},
+				xsrfCookieName: '',
+				xsrfHeaderName: '',
+				maxRedirects: 0,
+				data: JSON.stringify({id: token_id, subobj: {key1: 1, key2: 2}}),//'id='+token_id+'&id2=ghfg',
+				method: "post"
+			})
+			.then((data) => {
+				alert("some success");
+				return data.data;
+			})
+			.then((data) => {
+				console.log(data);
+			})
+			.catch((error) => {
+				alert("some failure");
+				console.log(error.toJSON());
+				if (("response" in error) && (error.repsonse)) {
+					reject(error.response.status);
+				} else if (("message" in error) && (error.message)) {
+					reject(error.message);
+				}
+			});
+		})
+	}
+}
+
+function ClearServerError() {
+	return {
+		type: 'CLEAR_ERROR',
+		payload: ""
+	}
+}
+
+function ClearServerTestResponse() {
+	return {
+		type: 'CLEAR_TEST_RESPONSE',
+		payload: ""
+	}
+}
+
+function UpdateGoogleResponseObj(newGoogleObject) {
+	return {
+		type: 'UPDATE_GOOGLE_OBJECT',
+		payload: newGoogleObject
+	}
+}
+
+function RespondToLogoutEvent() {
+	return {
+		type: 'RESPOND_TO_LOGOUT_EVENT',
+		payload: ""
+	}
+}
+
+function RespondToTicketExpiredEvent() {
+	return {
+		type: 'TICKET_EXPIRED',
+		payload: ""
+	}
+}
+
+function UpdateExpiresIn() {
+	return {
+		type: 'UPDATE_EXPIRES_IN',
+		payload: ""
+	}
+}
+
 export {
 	setGestureTimes, 
 	setCurrentGestureSizeAndLocation, 
@@ -170,6 +246,13 @@ export {
 	addSkipRange,
 	setSkipRangeTimes,
 	sampleAsychronousAction,
-	HideAsychronousDialogs	
+	HideAsychronousDialogs,
+	TestTokenIdOnServer,
+	ClearServerError,
+	ClearServerTestResponse,
+	UpdateGoogleResponseObj,
+	RespondToLogoutEvent,
+	RespondToTicketExpiredEvent,
+	UpdateExpiresIn
 };
 

@@ -36,6 +36,7 @@ const GestureTimeSlider = (props) => {
 	  props.addGesture(rawValue.toFixed(props.decimalPlaces),newStep);
   },[props,newStep]);
 
+  //let [initializedSliderDisplay, setInitialized] = useState(false);
   let [shouldShowTooltip, setShow] = useState(false);
   let handleMouseOver = useCallback((event) => {
 	  if (event.currentTarget === event.target)

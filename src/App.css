@@ -1,6 +1,8 @@
 .App {
   text-align: center;
 }
+.centerHeader {margin: auto; text-align: center;}
+
 #select_image_panel, #select_gesture_panel {display: flex; margin: 1em 0 0;}
 p {margin:0;}
 #select_image_panel p, #select_gesture_panel p {margin: 0 1em 0 0 !important;}
@@ -20,8 +22,9 @@ div.col-md-auto > .btn-danager {padding: 0.375rem 0.75rem !important; margin: 0 
 
 /* https://stackoverflow.com/questions/38377062/how-to-make-html-button-look-pressed-in-using-css */
 button.btn {
-  box-shadow: 2px 1px 2px gray;
+  box-shadow: 5px 5px 2px gray;
   margin: 4px 10px 4px 10px;
+  border: 3px outset black;
 }
 button.btn:active {
   box-shadow: 0 0 0 white !important;

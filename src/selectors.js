@@ -8,6 +8,40 @@ import orm from "./models";
 // it will automatically update from the other parts of the data structure
 // ************************************************************************************************
 
+const getTokenId = createSelector(
+	orm,
+	session => {
+		let loginMgr = session.LoginManager.first();
+		let googleObj = loginMgr.googleLoginResponseObj;
+		return ((googleObj) ? googleObj.tokenId : "");
+	}
+);
+
+const secondsLeftToTicketExpire = createSelector(
+	orm,
+	session => {
+		let loginMgr = session.LoginManager.first();
+		return loginMgr.expires_in;
+	}
+);
+
+const getServerError = createSelector(
+	orm,
+	session => {
+		let loginMgr = session.LoginManager.first();
+		return loginMgr.serverErrorTxt;
+	}
+);
+
+const getServerTestResponse = createSelector(
+	orm,
+	session => {
+		let loginMgr = session.LoginManager.first();
+		return loginMgr.serverTestResponse;
+	}
+);
+
+
 const whichAsychronousDialogs = createSelector(
 	orm,
 	session => {
@@ -195,7 +229,7 @@ const playbackGestures = createSelector(
 			return [];
 
 		let playbackMgr = session.PlaybackManager.first();
-		return playbackMgr.currentPlaybackDisplayGestures;
+		return playbackMgr.currentPlaybackDisplayGestures.map(arrayItem => arrayItem.gesture);
 	}
 );
 
@@ -235,5 +269,9 @@ export {
 	combinedPlaybackStatus,
 	playbackJumpTime,
 	whichAsychronousDialogs,
-	skipTimeInfo
+	skipTimeInfo,
+	getServerError,
+	getServerTestResponse,
+	getTokenId,
+	secondsLeftToTicketExpire
 };

@@ -57,15 +57,23 @@ PlaybackManager.fields = {
 	currentPlaybackClearIt: attr(),
 	currentPlaybackDisplayGestures: attr(),
 	currentPlaybackSlide: attr(),
-	playbackGesturesIndecies: attr(),
+	playbackGestureTree: attr(),
 	currentPlaybackSkipIt: attr(),
 	shouldSkip: attr(),
 	skipTime: attr()
 };
 PlaybackManager.modelName = "PlaybackManager";
 
+class LoginManager extends Model {}
+LoginManager.fields = {
+	googleLoginResponseObj: attr(),
+	serverErrorTxt: attr(),
+	serverTestResponse: attr(),
+};
+LoginManager.modelName = "LoginManager";
+
 var orm = new ORM({stateSelector: state => state});
-orm.register(SlideManager,Slide,Gesture,ClearObj,PlaybackManager,SkipRange);
+orm.register(SlideManager,Slide,Gesture,ClearObj,PlaybackManager,SkipRange,LoginManager);
 export default orm;
 export {SlideManager, Slide, Gesture, ClearObj};
 

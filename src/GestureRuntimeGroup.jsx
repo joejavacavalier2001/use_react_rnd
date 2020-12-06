@@ -28,8 +28,8 @@ const GestureRuntimeGroup = (props) => {
 
 const mapStateToProps = (state) => {
 	let showGestures = (playbackIsPlaying(state) ? playbackGestures(state) : []);
-  return {
-  	playbackGestures: showGestures 
-  }
+	return {
+  		playbackGestures: showGestures 
+	}
 };
 export default connect(mapStateToProps)(GestureRuntimeGroup);
