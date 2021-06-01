@@ -1,14 +1,12 @@
 import React, {Suspense} from 'react';
 import {connect} from "react-redux";
 import {combinedPlaybackStatus} from "./selectors";
-/*
 import GestureTimeSlider from "./GestureTimeSlider"; 
 import GestureSkipSlider from "./GestureSkipSlider"; 
-*/
-
+/*
 const GestureTimeSlider = React.lazy(() => import("./GestureTimeSlider")); 
 const GestureSkipSlider = React.lazy(() => import("./GestureSkipSlider")); 
-
+*/
 const GestureSliderParent = ({isSkipSlider = false, ...props}) => {
   let headerStr = (isSkipSlider ? "Skip " : "Gesture Time ");
   headerStr += "Slider:";
@@ -16,14 +14,12 @@ const GestureSliderParent = ({isSkipSlider = false, ...props}) => {
 	  	<>
 	  		{(props.playbackDuration === 0) ? (<h3>Still loading media file...</h3>) : 
 				((props.playbackIsPlaying) ? (<h3>Cannot edit gesture or skip times during playback</h3>) : 
-						(<Suspense fallback={<h3>Loading slider component...</h3>}>
 							<>
 							<h4>{headerStr}</h4>
 							{(isSkipSlider) ?
 							(<GestureSkipSlider decimalPlaces={props.decimalPlaces} />) :
 							(<GestureTimeSlider decimalPlaces={props.decimalPlaces} />)}
 							</>
-						</Suspense>)
 				)} 
 	  	</>
   );
