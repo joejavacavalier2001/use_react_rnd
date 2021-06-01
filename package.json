@@ -4,10 +4,15 @@
   "private": true,
   "homepage": "dafboard-frontend-prototype/",
   "dependencies": {
+    "@babel/core": "^7.14.2",
+    "@babel/plugin-transform-runtime": "^7.14.2",
+    "@babel/preset-env": "^7.14.2",
+    "@babel/preset-react": "^7.13.13",
     "@testing-library/jest-dom": "^4.2.4",
     "@testing-library/react": "^9.5.0",
     "@testing-library/user-event": "^7.2.1",
-    "axios": "^0.20.1",
+    "axios": "^0.21.1",
+    "babel-plugin-transform-runtime-file-extensions": "^2.0.0",
     "bootstrap": "^4.5.0",
     "duxpanel": "^1.0.4",
     "functional-red-black-tree": "^1.0.1",
@@ -15,8 +20,9 @@
     "jquery": "^3.5.1",
     "mdn-polyfills": "^5.20.0",
     "moment": "^2.28.0",
+    "node-polyfill-webpack-plugin": "^1.1.2",
     "popper.js": "^1.16.1",
-    "react": "^16.13.1",
+    "react": ">=16.13.1",
     "react-app-polyfill": "^1.0.6",
     "react-bootstrap": "^1.0.1",
     "react-compound-slider": "^2.5.0",
@@ -27,7 +33,6 @@
     "react-rnd": "^10.1.10",
     "react-router": "^5.2.0",
     "react-router-dom": "^5.2.0",
-    "react-scripts": "^3.4.4",
     "reduce-reducers": "^1.0.4",
     "redux": "^4.0.5",
     "redux-orm": "^0.16.1",
@@ -36,14 +41,28 @@
     "typescript": "^3.9.2",
     "use-force-update": "^1.0.7"
   },
+  "devDependencies": {
+    "babel-jest": "^26.6.3",
+    "babel-loader": "^8.2.2",
+    "babel-plugin-transform-runtime": "^6.23.0",
+    "css-loader": "^5.2.4",
+    "html-webpack-plugin": "^5.3.1",
+    "jest": "^26.6.3",
+    "react-test-renderer": "^17.0.2",
+    "sass": "^1.32.13",
+    "sass-loader": "^11.1.1",
+    "style-loader": "^2.0.0",
+    "webpack": "^5.37.0",
+    "webpack-cli": "^4.7.0",
+    "webpack-dev-server": "^3.11.2"
+  },
   "optionalDependencies": {
     "fsevents": "*"
   },
   "scripts": {
-    "start": "PORT=3001 react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "start": "webpack serve --host=0.0.0.0 --mode=development --port=3001 --https --key \"/etc/ssl/rktlebnhwebworks_net.key\" --cert \"/etc/ssl/rktlebnhwebworks.net.crt\"",
+    "build": "rm build/*; webpack --mode=production",
+    "test": "jest test"
   },
   "eslintConfig": {
     "extends": "react-app"
