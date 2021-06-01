@@ -1,4 +1,3 @@
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
 If you are checking out this project for the first time...
 Before you can run the build or start scripts, you need to download the dependencies.
